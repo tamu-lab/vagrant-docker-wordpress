@@ -4,18 +4,10 @@ Dockerを利用してWordPressを簡単に立ち上げることができるUbunt
 
 ## 使い方
 
-- 初回のみ ansible でのパッケージインストールが必要です。
+- `vagrant up` だけで *ansible_local* プロビジョナーを使って docker などがインストールされます。
 
-```
-[local] $ vagrant up
-[local] $ vagrant ssh
-[guest] $ cd /vagrant/ansible-playbook
-[guest] $ ansible-playbook docker-host.yml
-[guest] $ exit
-```
-
-Dockerのコンテナを起動します。
-この手順は毎回必要となります。
+- Dockerのコンテナを起動
+この手順は毎回必要です。
 ```
 [local] $ vagrant ssh
 [guest] $ cd /vagrant
@@ -28,6 +20,7 @@ Dockerのコンテナを起動します。
 ## WordPressのデータ一式について
 
 - WordPressのデータは `/vagrant/html` 以下に自動的に展開されます。
+  - wordpress コンテナを破棄してもソースコードなどは残ります。
 - バージョンは 4.7系の英語版となります。
 
 ## PHPのバージョンについて

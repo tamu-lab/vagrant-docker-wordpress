@@ -43,4 +43,14 @@ Vagrant.configure(2) do |config|
     sudo python -m pip install -U pip
     sudo pip install --upgrade packaging appdirs setuptools ansible markupsafe passlib ndg-httpsclient
   SHELL
+
+  if ARGV[0] == 'up'
+    config.vm.provision "ansible_local" do |ansible|
+      ansible.install = false
+      ansible.provisioning_path = "/vagrant/ansible-playbook"
+      ansible.playbook = "docker-host.yml"
+      ansible.verbose = "vv"
+    end
+  end
+
 end
