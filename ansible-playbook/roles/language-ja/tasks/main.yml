@@ -1,0 +1,11 @@
+- name: install japanese language pack
+  apt: name={{ item }} state=present
+  items:
+    - language-pack-ja-base
+    - language-pack-ja
+
+- name: set default locale
+  shell: update-locale LANG=ja_JP.UTF-8 LANGUAGE="ja_JP:ja"
+
+- name: insetall japanese font
+  apt: name=fonts-vlgothic state=present

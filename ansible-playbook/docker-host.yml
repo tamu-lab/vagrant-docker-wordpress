@@ -1,0 +1,11 @@
+- hosts: localhost
+  connection: local
+  become: yes
+  become_user: root
+  pre_tasks:
+    - name: "[pre task] apt cache update"
+      apt: update_cache=yes cache_valid_time=86400
+  roles:
+    - sysconfig
+    - language-ja
+    - docker-host

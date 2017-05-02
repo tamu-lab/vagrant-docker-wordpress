@@ -1,0 +1,2 @@
+docker_bip_address: 172.17.42.1
+docker_bip_subnet: 24

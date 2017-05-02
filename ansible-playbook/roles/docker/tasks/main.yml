@@ -1,0 +1,69 @@
+- name: Update your apt sources
+  apt: name={{ item }} state=present
+  with_items:
+    - apt-transport-https
+    - ca-certificates
+  ignore_errors: true
+
+- name: check added docker repository key
+  shell: apt-key list | grep 'docker@docker.com'
+  register: docker_aptkey_exists
+  failed_when:
+    - "docker_aptkey_exists.rc not in [0, 1]"
+
+- name: add docker apt repository key
+  apt_key: keyserver=hkp://p80.pool.sks-keyservers.net:80 id=58118E89F3A912897C070ADBF76221572C52609D
+  ignore_errors: true
+  when: "docker_aptkey_exists.rc == 1"
+
+- name: Add docker apt repository
+  apt_repository: repo='deb https://apt.dockerproject.org/repo ubuntu-trusty main'
+  ignore_errors: true
+
+- name: Install docker package
+  apt: name=docker-engine state=present update_cache=yes
+  ignore_errors: true
+
+- name: Enable docker service
+  service: name=docker state=started enabled=yes
+  ignore_errors: true
+
+- name: check modified DOCKER_OPTS add bip
+  shell: grep -e '--bip={{ docker_bip_address }}/{{ docker_bip_subnet }}' /etc/default/docker;
+  register: added_DOKCKER_OPTS_bip
+  failed_when:
+    - "added_DOKCKER_OPTS_bip.rc not in [0, 1]"
+
+- name: modify docker option add bind ip
+  shell: >
+    sed -i -e "s/^DOCKER_OPTS=/#DOCKER_OPTS=/g" /etc/default/docker;
+    /bin/echo -e 'DOCKER_OPTS="--bip={{ docker_bip_address }}/{{ docker_bip_subnet }}"' >> /etc/default/docker;
+  when: added_DOKCKER_OPTS_bip.rc == 1
+
+- name: restart docker service
+  service: name=docker state=restarted
+
+- name: check exists vagrant user
+  shell: id -u vagrant
+  register: exists_user_vagrant
+  failed_when:
+    - "exists_user_vagrant.rc not in [0, 1]"
+
+- name: vagrant join docker group
+  user: >
+    name=vagrant
+    groups=docker
+  when: exists_user_vagrant.rc == 0
+
+- name: check exists ubuntu user
+  shell: id -u ubuntu
+  register: exists_user_ubuntu
+  failed_when:
+    - "exists_user_ubuntu.rc not in [0, 1]"
+
+- name: ubuntu join docker group
+  user: >
+    name=ubuntu
+    groups=docker
+  when: exists_user_ubuntu.rc == 0
+

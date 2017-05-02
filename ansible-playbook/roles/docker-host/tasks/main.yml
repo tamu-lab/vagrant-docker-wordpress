@@ -1,0 +1,17 @@
+# ここから docker-compose のインストール
+- name: check installed docker-compose
+  stat: path=/usr/local/bin/docker-compose
+  register: stat_dockercompose
+  ignore_errors: true
+
+- name: install docker-compose
+  get_url: >
+    url="https://github.com/docker/compose/releases/download/{{ docker_compose_version }}/docker-compose-{{ ansible_system }}-{{ ansible_userspace_architecture }}"
+    dest=/usr/local/bin/docker-compose
+    mode=0755
+  when: (stat_dockercompose.stat.md5 is not defined) or (stat_dockercompose.stat.md5 != "{{ docker_compose_md5 }}")
+# ここまで docker-compose のインストール
+
+- name: restart docker
+  service: name=docker state=restarted
+  ignore_errors: true

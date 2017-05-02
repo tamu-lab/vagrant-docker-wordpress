@@ -1,0 +1,39 @@
+- name: configure syslog
+  copy: >
+    src=51-message.conf
+    dest=/etc/rsyslog.d/51-message.conf
+    mode=0644
+    owner=root
+    group=root
+  notify: restart syslog
+
+- name: configure system timezone
+  copy: content='Asia/Tokyo\n' dest=/etc/timezone backup=yes
+  notify:
+    - restart cron
+    - restart syslog
+
+- name: update tzdata
+  command: /usr/sbin/dpkg-reconfigure --frontend noninteractive tzdata
+
+- name: disabled root ssh access
+  lineinfile: "dest=/etc/ssh/sshd_config regexp='^PermitRootLogin ' line='PermitRootLogin no' state=present"
+  notify: restart sshd
+
+- name: install ntp
+  apt: name=ntp state=present
+
+- name: configure ntpd
+  shell: >
+    ntpdate -b 210.173.160.87;
+    sed -i -e "s/^server /#server /g;/^# ADDED mfeed start$/,/^# ADDED mfeed end$/d;" /etc/ntp.conf;
+    /bin/echo -e "# ADDED mfeed start\nserver 210.173.160.27\nserver 210.173.160.57\nserver 210.173.160.87\n# ADDED mfeed end" >> /etc/ntp.conf;
+  notify: restart ntpd
+
+- name: install dev_packages
+  apt: name={{ item }} state=present
+  with_items:
+    - git
+    - wget
+    - gcc
+    - make

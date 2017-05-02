@@ -1,0 +1,27 @@
+version: '2'
+
+services:
+  mysql:
+    container_name: "mysql"
+    image: mysql:5.7
+    volumes:
+      - "/etc/localtime:/etc/localtime:ro"
+      - "mysql-data:/var/lib/mysql"
+    env_file: docker.env
+
+  wordpress:
+    container_name: "wordpress"
+    image: wordpress:4.7-php7.1
+    depends_on:
+      - "mysql"
+    volumes:
+      - "/etc/localtime:/etc/localtime:ro"
+      - "./html:/var/www/html"
+    links:
+      - "mysql:mysql"
+    ports:
+      - "80:80"
+    env_file: docker.env
+
+volumes:
+  mysql-data:
